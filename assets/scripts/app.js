@@ -8,38 +8,79 @@ class DomHelper {
     const element = document.getElementById(elementId);
     const destinationElement = document.querySelector(newDestinationSelector);
     destinationElement.append(element);
+    element.scrollIntoView({ behavior: "smooth" });
   }
 }
-class Tooltip {
-  constructor(closeNotifierFunction) {
-    this.closeNotifier = closeNotifierFunction;
-  }
-  show() {
-    const tooltipElement = document.createElement("div");
-    tooltipElement.className = "card";
 
-    const elementIndex = document.querySelector("#list h2");
-    //    tooltipElement.textContent = elementIndex[0].innerHTML;
-    // get selected element index
-    for (var i = 0; i < elementIndex.length; i++) {
-      tooltipElement.textContent = elementIndex[i].innerHTML;
-      console.log(elementIndex[i].innerHTML);
+class Component {
+  constructor(hostElementId, insertBefore = false) {
+    if (hostElementId) {
+      this.hostElement = document.getElementById(hostElementId);
+    } else {
+      this.hostElement = document.body;
     }
 
-    tooltipElement.addEventListener("click", this.detach);
-    this.element = tooltipElement;
-    document.body.append(tooltipElement);
+    this.insertBefore = insertBefore;
   }
   detach = () => {
-    this.element.remove();
-    this.closeNotifier();
+    if (this.element) {
+      this.element.remove();
+      this.closeNotifier();
+    }
+
     // for older browser
     // his.element.parentElement.removeChild(this.element)
   };
+  show() {
+    this.hostElement.insertAdjacentElement(
+      this.insertBefore ? "afterbegin" : "beforeend",
+      this.element
+    );
+  }
+}
+class Tooltip extends Component {
+  constructor(closeNotifierFunction, tooltipText, title, hostElementId) {
+    super(hostElementId);
+    this.closeNotifier = closeNotifierFunction;
+    this.tooltipText = tooltipText;
+    this.title = title;
+    this.create();
+  }
 
   closeTooltip = () => {
     this.detach();
   };
+
+  create() {
+    const tooltipElement = document.createElement("div");
+    tooltipElement.className = "card";
+    const tooltipTemplate = document.getElementById('tooltip')
+    const tooltipBody = document.importNode(tooltipTemplate.content, true);
+    tooltipBody.querySelector('p').textContent = this.title
+        tooltipBody.querySelector("h3").textContent = this.tooltipText;
+    tooltipElement.appendChild(tooltipBody)
+
+    tooltipElement.setAttribute(
+      "style",
+      "background-color: #fffff; color: black; height: 200px; width:60%;  padding:10px; text-align:center;font-size: 15px"
+    );
+
+    const hostElPosleft = this.hostElement.offsetLeft;
+    const hostElPosTop = this.hostElement.offsetTop;
+    const hostHeight = this.hostElement.clientHeight;
+    const parentElementScrolling = this.hostElement.parentElement.scrollTop;
+
+    const x = hostElPosleft + 20;
+    const y = hostElPosTop + hostHeight - parentElementScrolling - 10;
+    tooltipElement.style.position = "absolute";
+    tooltipElement.style.left = x + "px"; //20px
+    tooltipElement.style.top = y + "px";
+
+
+
+    tooltipElement.addEventListener("click", this.detach);
+    this.element = tooltipElement;
+  }
 }
 
 class ProjectItem {
@@ -55,11 +96,20 @@ class ProjectItem {
     if (this.hasActiveTooltip) {
       return;
     }
+    const projectElement = document.getElementById(this.id);
+    const title = projectElement.querySelector("h2").innerHTML;
+    const tooltipText = projectElement.dataset.extraInfo;
 
-    const tooltip = new Tooltip(() => {
-      this.hasActiveTooltip = false;
-    });
+    const tooltip = new Tooltip(
+      () => {
+        this.hasActiveTooltip = false;
+      },
+      tooltipText,
+      title,
+      this.id
+    );
     tooltip.show();
+   
     this.hasActiveTooltip = true;
   }
   connectMoreInfoButton() {
@@ -67,7 +117,7 @@ class ProjectItem {
     const moreInfoBtn = projectitemElement.querySelector(
       "button:first-of-type"
     );
-    moreInfoBtn.addEventListener("click", this.showMoreInfoHandler);
+    moreInfoBtn.addEventListener("click", this.showMoreInfoHandler.bind(this));
   }
 
   connectSwitchButton(type) {
@@ -101,7 +151,6 @@ class ProjectList {
         )
       );
     }
-    console.log(this.projects);
   }
 
   setSwitchHandlerFunction(switchHandlerFunction) {
@@ -109,7 +158,7 @@ class ProjectList {
   }
   addProject(project) {
     this.projects.push(project);
-    console.log(this);
+
     DomHelper.moveElement(project.id, `#${this.type}-projects ul`);
     project.update(this.switchProject.bind(this), this.type);
   }
