@@ -10,6 +10,10 @@ body {
   margin: 0;
 
 }
+.btn-container button:hover{
+  background-color:#00c3ff;
+  border-color: #00c3ff
+}
 
 #main-header {
   width: 100%;
@@ -90,6 +94,9 @@ button:active {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
   padding: 1rem;
   background: white;
+}
+.droppable{
+  background: grey
 }
 
 #active-projects {

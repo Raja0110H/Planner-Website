@@ -54,11 +54,11 @@ class Tooltip extends Component {
   create() {
     const tooltipElement = document.createElement("div");
     tooltipElement.className = "card";
-    const tooltipTemplate = document.getElementById('tooltip')
+    const tooltipTemplate = document.getElementById("tooltip");
     const tooltipBody = document.importNode(tooltipTemplate.content, true);
-    tooltipBody.querySelector('p').textContent = this.title
-        tooltipBody.querySelector("h3").textContent = this.tooltipText;
-    tooltipElement.appendChild(tooltipBody)
+    tooltipBody.querySelector("p").textContent = this.title;
+    tooltipBody.querySelector("h3").textContent = this.tooltipText;
+    tooltipElement.appendChild(tooltipBody);
 
     tooltipElement.setAttribute(
       "style",
@@ -76,8 +76,6 @@ class Tooltip extends Component {
     tooltipElement.style.left = x + "px"; //20px
     tooltipElement.style.top = y + "px";
 
-
-
     tooltipElement.addEventListener("click", this.detach);
     this.element = tooltipElement;
   }
@@ -90,6 +88,7 @@ class ProjectItem {
     this.updateProjectListHandler = updateProjectListFunction;
     this.connectSwitchButton(type);
     this.connectMoreInfoButton();
+    this.startDrag();
   }
 
   showMoreInfoHandler() {
@@ -109,8 +108,15 @@ class ProjectItem {
       this.id
     );
     tooltip.show();
-   
+
     this.hasActiveTooltip = true;
+  }
+  //start drag//
+  startDrag() {
+    document.getElementById(this.id).addEventListener("dragstart", (event) => {
+      event.dataTransfer.setData("text/plain", this.id);
+      event.dataTransfer.effectAllowed = "move";
+    });
   }
   connectMoreInfoButton() {
     const projectitemElement = document.getElementById(this.id);
@@ -124,7 +130,21 @@ class ProjectItem {
     const projectItemElement = document.getElementById(this.id);
     let switchBtn = projectItemElement.querySelector("button:last-of-type");
     switchBtn = DomHelper.clearEventListener(switchBtn);
-    switchBtn.textContent = type === "active" ? "Finish" : "Activate";
+    if ((switchBtn.textContent = type === "active")) {
+      switchBtn.textContent = "Finish";
+      switchBtn.setAttribute(
+        "style",
+        "background-color:#ff2579; border-color: #ff2579"
+      );
+    } else {
+      switchBtn.setAttribute(
+        "style",
+        "background-color:green; border-color: green; opacity:0.5"
+      );
+      switchBtn.disabled = true;
+      switchBtn.textContent = "Done";
+    }
+
     switchBtn.addEventListener(
       "click",
       this.updateProjectListHandler.bind(null, this.id)
@@ -151,6 +171,38 @@ class ProjectList {
         )
       );
     }
+    this.endDrag();
+  }
+  //end drag//{
+  endDrag() {
+    const list = document.querySelector(`#${this.type}-projects ul`);
+    list.addEventListener("dragenter", (event) => {
+      if (event.dataTransfer.types[0] === "text/plain") {
+        list.parentElement.classList.add("droppable");
+        event.preventDefault();
+      }
+    });
+    list.addEventListener("dragover", (event) => {
+      event.preventDefault();
+    });
+
+    list.addEventListener("dragleave", (event) => {
+      if (event.relatedTarget.closest(`#${this.type}-projects ul`) !== list) {
+        list.parentElement.classList.remove("droppable");
+      }
+    });
+    list.addEventListener("drop", (event) => {
+      const projectId = event.dataTransfer.getData("text/plain");
+      if (this.projects.find((project) => project.id === projectId)) {
+        return;
+      }
+      document
+        .getElementById(projectId)
+        .querySelector("button:last-of-type")
+        .click();
+      list.parentElement.classList.remove("droppable");
+      event.preventDefault();
+    });
   }
 
   setSwitchHandlerFunction(switchHandlerFunction) {
