@@ -141,7 +141,7 @@ class ProjectItem {
         "style",
         "background-color:green; border-color: green; opacity:0.5"
       );
-      switchBtn.disabled = true;
+   
       switchBtn.textContent = "Done";
     }
 
