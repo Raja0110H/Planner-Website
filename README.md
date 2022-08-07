@@ -13,8 +13,6 @@ $ cd project
 $ npm install
 $ npm install -g serve;  
 
-# Setup
-
 # Start development
 $ type "serve" -- in terminal 
 
