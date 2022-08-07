@@ -6,7 +6,7 @@ This is a Sample for a project planner Website.
 
 # Install  Dependecies
 
-Some basic Git commands are:
+# Some basic Git commands are:
 
 $ git clone https://github.com/Raja0110H/Project-Planner-SamplePG.git        
 $ cd project 
