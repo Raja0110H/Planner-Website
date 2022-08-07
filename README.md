@@ -6,13 +6,13 @@ This is a Sample for a project planner Website.
 
 # Install  Dependecies
 
+$ npm install
+
 # Some basic Git commands are:
 
 $ git clone https://github.com/Raja0110H/Project-Planner-SamplePG.git        
 $ cd project 
-$ npm install
 $ npm install -g serve;  
-
 # Start development
 $ type "serve" -- in terminal 
 
@@ -25,6 +25,6 @@ https://raja0110h.github.io/Project-Planner-SamplePG/
 Html,
 Css,
 Javascript,
-  
+
 
 
